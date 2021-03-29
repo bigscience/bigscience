@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>Institution Network</title>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    html,
+    body {
+      font-family: "Helvetica Neue", Helvetica, "Arial", sans-serif;
+      
+      position: fixed;
+      height: 100%;
+      width: 100%;
+      margin: 0px;
+      overflow: hidden;
+      background-color: #dddddd;
+    }
+
+    text {
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+    }
+
+    .plotView{
+      position: absolute;
+      top: 0;
+      right: 0;
+      left: 0;
+      bottom: 75px;
+    }
+
+    .mapView {
+      position: absolute;
+      top: 0;
+      right: 0;
+      left: 0;
+      bottom: 0px;
+      pointer-events: none;
+    }
+
+    .nodesView {
+      position: absolute;
+      top: 0;
+      right: 0;
+      left: 0;
+      bottom: 0px;
+    }
+
+    .edgesView {
+      position: absolute;
+      top: 0;
+      right: 0;
+      left: 0;
+      bottom: 75px;
+      pointer-events: none;
+      
+    }
+
+    .legendsView {
+      position: absolute;
+      left: 0px;
+      bottom: 75px;
+      pointer-events: none; 
+      background:rgba(255, 255, 255, 0.6);
+      padding-left:10px;
+      padding-right:20px;
+      padding-top:2px;
+      padding-bottom:5px;
+      border-top-right-radius:5px;
+      
+    }
+
+    #netviz {
+      position: absolute;
+      top: 0;
+      right: 0;
+      left: 0;
+      bottom: 0;
+    }
+
+    .buttonsPanel {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 75px;
+
+      background-color: #fef0d9;
+      border-top: 1px solid #fdd49e;
+      /* display: flex;
+      align-items: center;
+      justify-content: flex-start; */
+    }
+
+
+
+    .buttonsPanel {
+      /* display: flex;
+      flex: 1 1;
+      margin: 0px;
+      flex-direction: column; */
+      z-index:10;
+    }
+
+    .timeSlider {
+      font-family: "Helvetica Neue", Helvetica, "Arial", sans-serif;
+      margin-left: 20px;
+      margin-right: 20px;
+      margin-top: 12.5px;
+      /* flex: 1 1 30px; */
+      /* height: 52px; */
+      overflow: visible;
+    }
+
+    /* canvas {
+      -moz-filter: url(filter.svg#drop-shadow);
+      filter: url(filter.svg#drop-shadow);
+      -webkit-filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.6));
+      filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.6));
+    } */
+
+
+    *:focus {
+      outline: none;
+    }
+
+    * {
+      -webkit-touch-callout: none;
+      /* iOS Safari */
+      -webkit-user-select: none;
+      /* Safari */
+      -khtml-user-select: none;
+      /* Konqueror HTML */
+      -moz-user-select: none;
+      /* Old versions of Firefox */
+      -ms-user-select: none;
+      /* Internet Explorer/Edge */
+      user-select: none;
+      /* Non-prefixed version, currently
+                                  supported by Chrome, Edge, Opera and Firefox */
+
+    }
+    .loaderContainer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 15px;
+      padding-bottom:10px;
+      /* padding-top:5px; */
+      padding-right:10px;
+      padding-left:27px;
+      pointer-events: none;
+      color: #b30000;
+      font-family: "Helvetica Neue", Helvetica, "Arial", sans-serif;
+      font-weight: bold;
+      z-index:10;
+      background-color:rgba(255,255,255,0.6);
+      border-bottom-right-radius:5px;
+      
+    }
+
+    .loader {
+      position: absolute;
+      top: 0;
+      left: 0;
+      border: 5px solid #f3f3f3; /* Light grey */
+      border-top: 5px solid #b30000; /* Blue */
+      border-radius: 50%;
+      width: 12px;
+      height: 12px;
+      animation: spin 1s linear infinite;
+      pointer-events: none;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    svg text {
+      font-family: "Helvetica Neue", Helvetica, "Arial", sans-serif;
+      font-weight: bold;
+      pointer-events: none;
+    }
+
+    .swatch {
+      font-size:10px;
+      font-weight:bold;
+      display: inline-flex;
+      align-items: center;
+      margin-right: 1em;
+      justify-content: space-between;
+    }
+
+    .swatch::before {
+      content: "";
+      width: 20px;
+      height: 20px;
+      margin-right: 0.5em;
+      background: var(--color);
+    }
+
+    
+
+
+  #selectionmenu {
+    position: absolute;
+    font-family: "Helvetica Neue", Helvetica, "Arial", sans-serif;
+    top:0px;
+    right:0px;
+    display: flex;
+    align-items: top;
+    justify-content: right;
+    border-bottom-left-radius:10px;
+  }
+
+  #selectionmenu a{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width:70px;
+    height:20px;
+    padding:5px;
+    font-size:14px;
+    background-color:var(--color);
+    color:white;
+    text-align: center;
+    text-decoration: none;
+    transition: width 0.25s, height 0.25s, font-size 0.25s, background-color 0.25s, font-weight 0.25s, color 0.25;
+    /* overflow: hidden; */
+  }
+  #selectionmenu a:hover{
+    width:80px;
+    height:25px;
+    padding:5px;
+    font-size:16px;
+  }
+  #selectionmenu a.selected{
+    width:120px;
+    height:30px;
+    padding:2x;
+    font-size:25px;
+    font-weight: bold;
+    /* background-color:rgba(255,255,255,0.2);
+    color:var(--color); */
+    text-align: center;
+    text-decoration: none;
+    /* overflow: hidden; */
+  }
+
+  #helpscreen{
+    background:rgba(255,255,255,0.5);
+    z-index:100;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display:flex;
+    align-items: center;
+    justify-content: center;
+      
+  }
+
+  #helpscreen .mainHelp{
+    
+    position: absolute;
+    top: 70px;
+    left: 30px;
+    right: 30px;
+    bottom: 170px;
+    background-color:rgb(255,255,255,0.9);
+    /* border-top: 1px solid #dddddd;
+    border-bottom: 1px solid #dddddd; */
+    box-shadow: 1px 1px 10px rgb(200,200,200,0.8);
+    color:#555555;
+    padding:10px;
+    overflow: scroll;
+    font-size:16px;
+    
+  }
+  #helpscreen .projectHelp{
+    position: absolute;
+    top: 20px;
+    right: 50px;
+    width:270px;
+    height:30px;
+    font-weight:bold;
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: 10px;
+    background-color:rgba(68, 92, 105, 0.9);
+    /* border-top: 1px solid #dddddd;
+    border-bottom: 1px solid #dddddd; */
+    box-shadow: 1px 1px 10px rgb(200,200,200,0.8);
+    color:white;
+    clip-path: polygon(0 40%, 50% 0, 100% 40%, 100% 100%, 0 100%);
+  }
+
+
+  #helpscreen .timelineHelp{
+    position: absolute;
+    bottom: 60px;
+    left: 50px;
+    width:270px;
+    height:30px;
+    font-weight:bold;
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    padding-bottom: 13px;
+    background-color:rgba(180, 61, 31, 0.9);
+    /* border-top: 1px solid #dddddd;
+    border-bottom: 1px solid #dddddd; */
+    box-shadow: 1px 1px 10px rgb(200,200,200,0.8);
+    color:white;
+    /* clip-path: polygon(0 40%, 50% 0, 100% 40%, 100% 100%, 0 100%); */
+    clip-path: polygon(0 0, 100% 0, 100% 60%, 50% 100%, 0 60%);
+    
+  }
+  
+
+
+  .question {
+    font-family: "Helvetica Neue", Helvetica, "Arial", sans-serif;
+    height: 30px;
+    width: 30px;
+    background: rgb(59, 11, 11);
+    color:white;
+    font-size: 28px;
+    line-height: 30px;
+    text-align: center;
+    border-radius: 50%;
+    cursor: pointer;
+    position:absolute;
+    bottom:80px;
+    right:10px;
+    z-index: 200;
+  }
+
+
+
+  </style>
+</head>
+
+<body>
+  <script type="module" src="main.js" defer></script>
+
+  <div id="netviz"></div>
+  <div id="selectionmenu"></div>
+  <div id="helpscreen" style="display:none">
+    <div class="mainHelp">
+      <em>Click anywhere to dimiss this guide.</em>
+      <h3>About</h3>
+      <p>This interactive data visualization accompanies the Nature Expert Recommendation on “Embracing data-driven decision making to manage and communicate the impact of big science projects.”
+      The visualization shows the collaboration network among institutions across the map. Data were extracted from the INSPIRE HEP dataset and processed to generate the networks for the 4 considered physics and astronomy projects: BaBar, ATLAS, LIGO, and IceCube. Openstreetmaps data was used to resolve geolocations. In the visualization, each edge corresponds to the existence of collaborations between two institutions. The edge opacity and width are proportional to the strength of the collaboration across all the considered years. Nodes colors represent the institution types and edge colors indicate the first year of collaboration according to the legends. For performance reasons, only the top 1000 most significant connections are displayed for the current view of the map.</p>
+      <h3>Usage</h3>
+      <ul>
+      <li>Project data can be selected from the top-right panel.</li> 
+      <li> range for analysis can be changed by moving the slider on the bottom of the page.</li>
+      <li> Pan interaction can be done by clicking and dragging the mouse pointer or tapping and dragging.</li>
+      <li>Zoom in/out can be accomplished by using the mouse wheel or by using the pinch gesture.
+      </li>
+      </ul>
+
+ 
+    </div>
+
+    <div class="projectHelp">Select the project here</div>
+
+    <div class="timelineHelp">Change the time range here</div>
+    </div>
+    <div class="question">?</div>
+  </div>
+</body>
+
+</html>

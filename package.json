@@ -1,0 +1,34 @@
+{
+  "scripts": {
+    "start": "snowpack dev",
+    "build": "snowpack build",
+    "test": "echo \"This template does not include a test runner by default.\" && exit 1",
+    "format": "prettier --write \"Core/**/*.js\"",
+    "lint": "prettier --check \"Core/**/*.js\""
+  },
+  "snowpack": {
+    "install": [
+      "d3",
+      "d3-geo",
+      "d3-geo-projection",
+      "d3-geo-zoom",
+      "nouislider"
+    ]
+  },
+  "dependencies": {
+    "@colormap/core": "^0.2.0",
+    "@colormap/presets": "^0.2.0",
+    "d3": "^6.0.0",
+    "d3-geo": "^2.0.1",
+    "d3-geo-projection": "^3.0.0",
+    "d3-geo-zoom": "^1.4.1",
+    "gl-matrix": "^3.3.0",
+    "install": "^0.13.0",
+    "nouislider": "^14.6.3",
+    "npm": "^7.5.2"
+  },
+  "devDependencies": {
+    "prettier": "^2.2.1",
+    "snowpack": "^2.18.5"
+  }
+}
