@@ -1,0 +1,12 @@
+{
+  "imports": {
+    "@colormap/core": "./@colormap/core.js",
+    "@colormap/presets": "./@colormap/presets.js",
+    "d3": "./d3.js",
+    "d3-geo-projection": "./d3-geo-projection.js",
+    "d3-geo-zoom": "./d3-geo-zoom.js",
+    "gl-matrix": "./gl-matrix.js",
+    "nouislider": "./nouislider.js",
+    "nouislider/distribute/nouislider.css": "./nouislider/distribute/nouislider.css"
+  }
+}
