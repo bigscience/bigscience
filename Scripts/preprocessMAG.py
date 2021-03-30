@@ -10,14 +10,14 @@ import gzip
 
 
 # Set the PATH to MAG Folder
-MAGPath = "/gpfs/sciencegenome/Journal2JournalData/mag/"
+MAGPath = "../Data/MAG/"
 
 minPaperCount = 1;
 rebuildAll = False
 
 
-dataPath = PJ("..","..","Data","Processed")
-temporaryPath = PJ("..","..","Temp")
+dataPath = PJ("..","Data","Processed")
+temporaryPath = PJ("..","Temp")
 os.makedirs(dataPath, exist_ok=True)
 os.makedirs(temporaryPath, exist_ok=True)
 
@@ -39,7 +39,7 @@ journalISSN = [];
 totalJournalCount = 0;
 totalBigCount = 0;
 totalISSNCount = 0;
-with gzip.open(PJ(MAGPath,"Journals.txt.gz"),"rt") as fd:
+with open(PJ(MAGPath,"Journals.txt"),"rt") as fd:
     for line in tqdm(fd):
         entries = line.split("\t");
         paperCount = int(entries[7]);
@@ -91,7 +91,7 @@ if(not rebuildAll and os.path.exists(paper2journalYearBGZPath)):
                 break;
 else:
     print("Reading from RAW file...");
-    with gzip.open(PJ(MAGPath,"Papers.txt.gz"),"rt") as fd:
+    with open(PJ(MAGPath,"Papers.txt"),"rt") as fd:
         pbar = tqdm(total=estimatedCount);
         for line in fd:
             pbar.update(1);
@@ -122,7 +122,7 @@ if(not rebuildAll and os.path.exists(journalAuthorYearPaperPath)):
 else:
     print("Generating Journal-Author-Year-Paper table...");
     with open(journalAuthorYearPaperPath,"w") as outfd:
-        with gzip.open(PJ(MAGPath,"PaperAuthorAffiliations.txt.gz"),"rt") as fd:
+        with open(PJ(MAGPath,"PaperAuthorAffiliations.txt"),"rt") as fd:
             pbar = tqdm(total=estimatedCount);
             for line in fd:
                 pbar.update(1);
@@ -154,8 +154,7 @@ if(not rebuildAll and (os.path.exists(compressedJournalAuthorYearPaperPath) or o
 else:
     print("Generating Journal-Author-Year-Paper sorted table...");
     with open(sortedJournalAuthorYearPaperPath,"w") as fd:
-        subprocess.run(["sort", "--parallel=20", "-T../../Temp/","-t","\t","-nk1","-nk2","-nk4",journalAuthorYearPaperPath],stdout=fd)
-
+        subprocess.run(["sort", "--parallel=20", "-T%s"%temporaryPath,"-t","\t","-nk1","-nk2","-nk4",journalAuthorYearPaperPath],stdout=fd)
 
 
 if(not rebuildAll and os.path.exists(compressedJournalAuthorYearPaperPath)):
@@ -181,12 +180,12 @@ print("\nSorting Author list by AuthorID...");
 #WRITE
 #Authors
 dataRAWFilePath = PJ(MAGPath,"Authors.txt");
-sortedFilePath = PJ(dataPath,"Authors_byAuthorID.txt");
+sortedFilePath = PJ(dataPath,"MAGAuthors_byAuthorID.txt");
 
 # !sort --parallel=20 --compress-program=bgzip -T../../Data/Temporary -t \t -nk1 /home/filsilva/Journal2Journal/Data/Raw/Authors.txt > ../../Data/ProcessedNew/Authors_byAuthorID.txt
 
 with open(sortedFilePath,"wb") as fd: #
-    subprocess.run(["sort", "--parallel=20","--compress-program=bgzip", "-T%s"%temporaryPath,"-t","\t","-nk1",dataRAWFilePath],stdout=fd)
+    subprocess.run(["sort", "--parallel=20", "-T%s"%temporaryPath,"-t","\t","-nk1",dataRAWFilePath],stdout=fd)
 
 
 
@@ -255,7 +254,7 @@ sortedFilePath = PJ(dataPath,"MAGPaperReferencesByFrom.txt");
 #!sort --parallel=20 -T./Temp/ -t$'\t' -nk1 -nk2 -nk4 JournalAuthorYearPaper.txt > JournalAuthorYearPaper_byJournal.txt
 
 with open(sortedFilePath,"wb") as fd: #
-    subprocess.run(["sort", "--parallel=20","--compress-program=bgzip", "-T%s"%temporaryPath,"-t","\t","-nk1","-nk2",dataRAWFilePath],stdout=fd)
+    subprocess.run(["sort", "--parallel=20", "-T%s"%temporaryPath,"-t","\t","-nk1","-nk2",dataRAWFilePath],stdout=fd)
 
 
 dataRAWFilePath = PJ(MAGPath,"PaperReferences.txt");
@@ -264,7 +263,7 @@ sortedFilePath = PJ(dataPath,"MAGPaperReferencesByTo.txt");
 #!sort --parallel=20 -T./Temp/ -t$'\t' -nk1 -nk2 -nk4 JournalAuthorYearPaper.txt > JournalAuthorYearPaper_byJournal.txt
 
 with open(sortedFilePath,"wb") as fd: #
-    subprocess.run(["sort", "--parallel=20","--compress-program=bgzip", "-T%s"%temporaryPath,"-t","\t","-nk2","-nk1",dataRAWFilePath],stdout=fd)
+    subprocess.run(["sort", "--parallel=20", "-T%s"%temporaryPath,"-t","\t","-nk2","-nk1",dataRAWFilePath],stdout=fd)
     
 
 print("\nProcessing and saving Paper information...");
@@ -277,7 +276,7 @@ sortedFilePath = PJ(dataPath,"MAGPapersByPaper.txt");
 #!sort --parallel=20 -T./Temp/ -t$'\t' -nk1 -nk2 -nk4 JournalAuthorYearPaper.txt > JournalAuthorYearPaper_byJournal.txt
 
 with open(sortedFilePath,"wb") as fd: #
-    subprocess.run(["sort", "--parallel=20","--compress-program=bgzip", "-T%s"%temporaryPath,"-t","\t","-nk1","-nk8","-nk12",dataRAWFilePath],stdout=fd)
+    subprocess.run(["sort", "--parallel=20", "-T%s"%temporaryPath,"-t","\t","-nk1","-nk8","-nk12",dataRAWFilePath],stdout=fd)
 
 
 
@@ -386,10 +385,7 @@ with bgzf.open(bgzPapersFilePath,"rb") as infd:
             aggregatedData=b''
 
 
-print("\nProcessing and saving Paper references...");
-
-#WRITE
-#references FromTo
+print("\nc"); #WRITE" #references FromTo
 estimatedCount = 1600002313/79684807;
 sortedReferencesFromToList = PJ(dataPath,"MAGPaperReferencesByFrom.txt");
 bgzReferencesFromToPath = PJ(dataPath,"MAGPaperReferencesFromTo.bgz");

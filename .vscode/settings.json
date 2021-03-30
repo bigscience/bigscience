@@ -1,4 +1,4 @@
 {
-  "python.pythonPath": "/N/slate/filsilva/miniconda3/envs/inspiredata/bin/python",
+  "python.pythonPath": "/N/slate/filsilva/miniconda3/envs/bigscience/bin/python",
   "jupyter.jupyterServerType": "local"
 }

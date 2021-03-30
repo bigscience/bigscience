@@ -1,0 +1,49 @@
+,,Valid,Invalid,Total,Valid %
+BaBar,Referenced Citing Venue Matches,1027,1329,2356,44%
+BaBar,Referenced Cited Venue Matches,6926,1931,8857,78%
+BaBar,Referenced Citing Keyword Matches,2258,98,2356,96%
+BaBar,Referenced Cited Keyword Matches,8597,260,8857,97%
+BaBar,Referenced Citing at least 2 Keywords Matches,1860,496,2356,79%
+BaBar,Referenced Cited at least 2 Keywords Matches,7621,1236,8857,86%
+BaBar,Citing Citing Venue Matches,10249,8355,18604,55%
+BaBar,Citing Cited Venue Matches,815,655,1470,55%
+BaBar,Citing Citing Keyword Matches,17760,844,18604,95%
+BaBar,Citing Cited Keyword Matches,1426,44,1470,97%
+BaBar,Citing Citing at least 2 Keywords Matches,15147,3457,18604,81%
+BaBar,Citing Cited at least 2 Keywords Matches,1209,261,1470,82%
+ATLAS,Referenced Citing Venue Matches,3134,8281,11415,27%
+ATLAS,Referenced Cited Venue Matches,18633,8956,27589,68%
+ATLAS,Referenced Citing Keyword Matches,11344,71,11415,99%
+ATLAS,Referenced Cited Keyword Matches,27004,585,27589,98%
+ATLAS,Referenced Citing at least 2 Keywords Matches,11170,245,11415,98%
+ATLAS,Referenced Cited at least 2 Keywords Matches,25085,2504,27589,91%
+ATLAS,Citing Citing Venue Matches,21409,20441,41850,51%
+ATLAS,Citing Cited Venue Matches,2597,3935,6532,40%
+ATLAS,Citing Citing Keyword Matches,40945,905,41850,98%
+ATLAS,Citing Cited Keyword Matches,6483,49,6532,99%
+ATLAS,Citing Citing at least 2 Keywords Matches,38276,3574,41850,91%
+ATLAS,Citing Cited at least 2 Keywords Matches,6367,165,6532,97%
+LIGO,Referenced Citing Venue Matches,383,118,501,76%
+LIGO,Referenced Cited Venue Matches,5467,1467,6934,79%
+LIGO,Referenced Citing Keyword Matches,494,7,501,99%
+LIGO,Referenced Cited Keyword Matches,6775,159,6934,98%
+LIGO,Referenced Citing at least 2 Keywords Matches,456,45,501,91%
+LIGO,Referenced Cited at least 2 Keywords Matches,6311,623,6934,91%
+LIGO,Citing Citing Venue Matches,8851,6597,15448,57%
+LIGO,Citing Cited Venue Matches,376,81,457,82%
+LIGO,Citing Citing Keyword Matches,15082,366,15448,98%
+LIGO,Citing Cited Keyword Matches,450,7,457,98%
+LIGO,Citing Citing at least 2 Keywords Matches,13971,1477,15448,90%
+LIGO,Citing Cited at least 2 Keywords Matches,413,44,457,90%
+IceCube,Referenced Citing Venue Matches,371,630,1001,37%
+IceCube,Referenced Cited Venue Matches,5001,1921,6922,72%
+IceCube,Referenced Citing Keyword Matches,970,31,1001,97%
+IceCube,Referenced Cited Keyword Matches,6786,136,6922,98%
+IceCube,Referenced Citing at least 2 Keywords Matches,883,118,1001,88%
+IceCube,Referenced Cited at least 2 Keywords Matches,6216,706,6922,90%
+IceCube,Citing Citing Venue Matches,4020,4721,8741,46%
+IceCube,Citing Cited Venue Matches,333,353,686,49%
+IceCube,Citing Citing Keyword Matches,8547,194,8741,98%
+IceCube,Citing Cited Keyword Matches,660,26,686,96%
+IceCube,Citing Citing at least 2 Keywords Matches,7876,865,8741,90%
+IceCube,Citing Cited at least 2 Keywords Matches,613,73,686,89%

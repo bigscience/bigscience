@@ -10,6 +10,7 @@ import pickle
 import os
 import xnetwork as xn
 import bgzf
+import json
 import struct
 import os
 import igraph as ig
@@ -20,7 +21,9 @@ import sys
 import re
 from datetime import datetime as dt
 import sys
-import matplotlibimport nltk
+import matplotlib
+import nltk
+
 nltk.download("stopwords")
 from nltk.corpus import stopwords
 
@@ -29,12 +32,13 @@ matplotlib.rcParams['ps.fonttype'] = 42
 
 
 MAGPath = PJ("..","Data","MAG") #PATH TO THE MAG DATA
+MAGPath = PJ("/gpfs/sciencegenome/AuthorDynamics/MAG/mag-2021-01-05/mag")
 dataPath = PJ("..","Data","Processed")
 figuresPath = PJ("..","Figures")
 graycolor = "#808080"
 
-HCAProjectDataPath = PJ("..","Data",,"Publications","Biomedical Papers","HumanCellAtlas.json")
-HGPTitles2MAGPath = PJ("..","Data",,"Publications","Biomedical Papers","HGP_Publications_MAG.tsv")
+HCAProjectDataPath = PJ("..","Data","Publications","Biomedical Papers","HumanCellAtlas.json")
+HGPTitles2MAGPath = PJ("..","Data","Publications","Biomedical Papers","HGP_Publications_MAG.tsv")
 
 minPaperCount = 1;
 rebuildAll = False
@@ -173,7 +177,7 @@ magID2Index = dictFromList(index2magID)
 #                       4: Alternative Title
 # 3	AttributeValue	string	
 
-paperExtendedAttributesFilePath = PJ(MAGPath,"PaperExtendedAttributes.txt.gz");
+paperExtendedAttributesFilePath = PJ(MAGPath,"PaperExtendedAttributes.txt");
 index2PubMedId = [None]*len(index2magID)
 index2PmcId = [None]*len(index2magID)
 missingPaperIDs = set()
@@ -181,7 +185,7 @@ estimatedCount = 233745561;
 previousPaperID = 0
 currentIndex = 0
 magCount = len(index2magID)
-with gzip.open(PJ(MAGPath,"PaperExtendedAttributes.txt.gz"),"rt") as fd:
+with open(paperExtendedAttributesFilePath,"rt") as fd:
     pbar = tqdm(total=estimatedCount);
     pbar2 = tqdm(total=estimatedCount);
     for line in fd:
@@ -291,10 +295,10 @@ for entry in HCAProjectData:
 
 #Saving HCA Matched MAG Indices
 with open(PJ("..","Data","Publications","Biomedical Papers","HCA_MAGIndices.json"),"wt") as fd:
-    ujson.dump(HCAProjectMAGIndices,fd)
+    ujson.dump(list(HCAProjectMAGIndices),fd)
     
-with open(PJ("..","Data","Publications","Biomedical Papers","HCA_MissingEntries.json"),"wt" as fd:
-    ujson.dump(HCAMissingData,fd)
+with open(PJ("..","Data","Publications","Biomedical Papers","HCA_MissingEntries.json"),"wt") as fd:
+    ujson.dump(list(HCAMissingData),fd)
 
 
 
@@ -313,19 +317,16 @@ for referece,url in dfHGP[["Reference","MAG URL"]].to_numpy():
     HGPMissingData.append(referece);
 
 with open(PJ("..","Data","Publications","Biomedical Papers","HGP_MAGIndices.json"),"wt") as fd:
-    ujson.dump(HGPProjectMAGIndices,fd)
+    ujson.dump(list(HGPProjectMAGIndices),fd)
     
 with open(PJ("..","Data","Publications","Biomedical Papers","HGP_MissingEntries.json"),"wt") as fd:
-    ujson.dump(HGPMissingData,fd)
+    ujson.dump(list(HGPMissingData),fd)
 
-
-          
 HBMapDataPaths = [
-    "Pubhl_Export_21Jan2021_084406.csv",
-    "Pubhl_Export_21Jan2021_084445.csv",
-    "Publ_18Jan2021_014100_86642982.csv"
+    PJ("..","Data","Publications","Biomedical Papers","Pubhl_Export_21Jan2021_084406.csv"),
+    PJ("..","Data","Publications","Biomedical Papers","Pubhl_Export_21Jan2021_084445.csv"),
+    PJ("..","Data","Publications","Biomedical Papers","Publ_18Jan2021_014100_86642982.csv")
 ]
-
 
 HBMapTitleKey = "Title (Link to full-text in PubMed Central)"
 HBMapDfs = [pd.read_csv(filename,dtype={"PMC ID":str,"PMID":str}) for filename in HBMapDataPaths]
@@ -337,7 +338,6 @@ HBMapReducedTitles = set(text_prepare(title.lower()) for title in HBMapTitles if
 HBMapPMCIDs = set(pmcid.lower() for pmcid in HBMapDf["PMC ID"].to_list() if isinstance(pmcid,str))
 HBMapPUBMEDIDs = set(pubmedID.lower() for pubmedID in HBMapDf["PMID"].to_list() if isinstance(pubmedID,str))
 
-          
 
 HBMapSelectedDOIMatches = {}
 HBMapSelectedTitleMatches = {}
@@ -408,10 +408,10 @@ for magID in HBMapManualMAGIDIncludes:
         HBMapProjectMAGIndices.add(magID2Index[magID])
 
 with open(PJ("..","Data","Publications","Biomedical Papers","HBMap_MAGIndices.json"),"wt") as fd:
-    ujson.dump(HBMapProjectMAGIndices,fd)
+    ujson.dump(list(HBMapProjectMAGIndices),fd)
     
 with open(PJ("..","Data","Publications","Biomedical Papers","HBMap_MissingEntries.json"),"wt") as fd:
-    ujson.dump(HBMapMissingData,fd)
+    ujson.dump(list(HBMapMissingData),fd)
 
           
 
@@ -428,8 +428,6 @@ print("HGP")
 print("\tMatches: %d\n\tMissing:%d"%(len(HGPProjectMAGIndices),len(HGPMissingData)))
 
 
-# In[ ]:
-
 
 # Testing open
 with open(PJ("..","Data","Publications","Biomedical Papers","HCA_MAGIndices.json"),"rt") as fd:
@@ -442,19 +440,20 @@ with open(PJ("..","Data","Publications","Biomedical Papers","HGP_MAGIndices.json
     HGPProjectMAGIndices = set(ujson.load(fd))
 
 
-# Matching with MAG
+# Recovering References from MAG
 
 
 #references FromTo
-estimatedCount = 79684807;
-bgzReferencesFromToPath = PJ(dataPath,"MAGPaperReferencesFromTo.bgz");
-entriesCount = 0;
+estimatedCount = 79684807
+bgzReferencesFromToPath = PJ(dataPath,"MAGPaperReferencesFromTo.bgz")
+entriesCount = 0
 # setOfJournalsReferenced = set()
 # setOfJournalsWithPublications = set()
-HCACitationsPerYear = {};
-HBMapCitationsPerYear = {};
-HCAHuBMapCitationsPerYear = {};
-HGPCitationsPerYear = {};
+HCACitationsPerYear = {}
+HBMapCitationsPerYear = {}
+HCAHuBMapCitationsPerYear = {}
+HGPCitationsPerYear = {}
+
 
 projectCitations = {
     "HCA":(HCAProjectMAGIndices,HCACitationsPerYear),
@@ -463,8 +462,54 @@ projectCitations = {
     "HGP":(HGPProjectMAGIndices,HGPCitationsPerYear)
 }
 
-MAGID2CitationYear = {};
+MAGID2CitationYear = {}
 with bgzf.open(bgzReferencesFromToPath,"rb") as infd:
+    pbar = tqdm(total=estimatedCount)
+    count = 0
+    while True:
+        pbar.update(1)
+        lengthData = infd.read(8)
+        if(len(lengthData)==8):
+            length = struct.unpack("<q",lengthData)[0]
+        else:
+            break
+        data = infd.read(length)
+        edgesCount = length/8-1
+        fmt = "<%dq" % (edgesCount+1)
+        edgeData  = list(struct.unpack(fmt,data))
+        fromIndex = edgeData[0]
+        fromID = index2magID[fromIndex]
+        count+=1
+        if(len(edgeData)>1):
+            year = index2FirstYear[fromIndex]
+            for projectName,(indices,citationsPerYear) in projectCitations.items():
+                toIndices = set(edgeData[1:]).intersection(indices)
+                if(toIndices):
+                    if(year not in citationsPerYear):
+                        citationsPerYear[year] = set()
+                    citationsPerYear[year].add(fromIndex)
+                    for toID in [index2magID[index] for index in toIndices]:
+                        if(toID not in MAGID2CitationYear):
+                            MAGID2CitationYear[toID] = []
+                        MAGID2CitationYear[toID].append((fromID,year))
+            
+
+HCAReferencesPerYear = {}
+HBMapReferencesPerYear = {}
+HCAHuBMapReferencesPerYear = {}
+HGPReferencesPerYear = {}
+
+projectReferences = {
+    "HCA":(HCAProjectMAGIndices,HCAReferencesPerYear),
+    "HuBMAP":(HBMapProjectMAGIndices,HBMapReferencesPerYear),
+    "HuBMAP+HCA":(HBMapProjectMAGIndices.union(HCAProjectMAGIndices),HCAHuBMapReferencesPerYear),
+    "HGP":(HGPProjectMAGIndices,HGPReferencesPerYear)
+}
+
+bgzReferencesToFromPath = PJ(dataPath,"MAGPaperReferencesToFrom.bgz");
+entriesCount = 0;
+MAGID2ReferenceYear = {};
+with bgzf.open(bgzReferencesToFromPath,"rb") as infd:
     pbar = tqdm(total=estimatedCount);
     count = 0;
     while True:
@@ -482,23 +527,48 @@ with bgzf.open(bgzReferencesFromToPath,"rb") as infd:
         fromID = index2magID[fromIndex]
         count+=1;
         if(len(edgeData)>1):
-            year = index2FirstYear[fromIndex];
-            for projectName,(indices,citationsPerYear) in projectCitations.items():
+            for projectName,(indices,referencesPerYear) in projectReferences.items():
                 toIndices = set(edgeData[1:]).intersection(indices)
                 if(toIndices):
-                    if(year not in citationsPerYear):
-                        citationsPerYear[year] = set();
-                    citationsPerYear[year].add(fromIndex);
-                    for toID in [index2magID[index] for index in toIndices]:
-                        if(toID not in MAGID2CitationYear):
-                            MAGID2CitationYear[toID] = [];
-                        MAGID2CitationYear[toID].append((fromID,year));
+                    if(year not in referencesPerYear):
+                        referencesPerYear[year] = set();
+                    referencesPerYear[year].add(fromIndex);
+                    for toIndex,toID in [(index,index2magID[index]) for index in toIndices]:
+                        year = index2FirstYear[fromIndex];
+                        if(toID not in MAGID2ReferenceYear):
+                            MAGID2ReferenceYear[toID] = [];
+                        MAGID2ReferenceYear[toID].append((fromID,year));
             
 
+projectCitationsIndices = {}
+projectReferencesIndices = {}
 
+projectCitationsEdges = {}
+projectReferencesEdges = {}
 
-          
-          
+for projectName,(indices,citationsPerYear) in projectCitations.items():
+    citationsEdges = []
+    citationsSet = set()
+    projectCitationsEdges[projectName] = citationsEdges
+    projectCitationsIndices[projectName] = citationsSet
+    for paperIndex in indices:
+        paperID = index2magID[paperIndex]
+        if paperID in MAGID2CitationYear:
+            for toID,year in MAGID2CitationYear[paperID]:
+                citationsEdges.append((paperID,toID))
+                citationsSet.add(toID)
+
+for projectName,(indices,referencesPerYear) in projectReferences.items():
+    referencesEdges = []
+    referencesSet = set()
+    projectReferencesEdges[projectName] = referencesEdges
+    projectReferencesIndices[projectName] = referencesSet
+    for paperIndex in indices:
+        paperID = index2magID[paperIndex]
+        if paperID in MAGID2ReferenceYear:
+            for fromID,year in MAGID2ReferenceYear[paperID]:
+                referencesEdges.append((paperID,fromID))
+                referencesSet.add(fromID)
 
 
 HCAAffiliationsPerYear = {};
@@ -515,6 +585,8 @@ projectAuthorAffiliations = {
     "HuBMAP+HCA":(set(HBMapProjectMAGIndices).union(set(HCAProjectMAGIndices)),HuBMapAffiliationsPerYear,HuBMapAuthorsPerYear),
     "HGP":(HGPProjectMAGIndices,HGPAffiliationsPerYear,HGPAuthorsPerYear)
 }
+
+
 
 allMAGIDs = {index2magID[entry] for entry in HCAProjectMAGIndices|HBMapProjectMAGIndices|HGPProjectMAGIndices}
 
@@ -556,7 +628,7 @@ with open(PJ(MAGPath,"PaperAuthorAffiliations.txt"),"rt") as fd:
                             affiliationsPerYear[paperYear] = set();
                         affiliationsPerYear[paperYear].add(paperAffiliationID);
 
-          
+
 
 indicesByProject = {
 "HCA" : HCAProjectMAGIndices,
@@ -608,9 +680,6 @@ for projectName,indices in indicesByProject.items():
     exportFilesByProject[projectName].close()
 
 
-          
-
-          
 # Loading MAG Data
 journalIndex2MAGID = np.loadtxt(PJ(dataPath,"MAGJournalIndex2ID.txt.gz"),dtype=int)
 journalMAGID2Index = dictFromList(journalIndex2MAGID)
@@ -634,24 +703,179 @@ with gzip.open(PJ(dataPath,"MAGJournalISSN.txt.gz"),"rt") as fd:
     journalMAGISSN = [line.strip() for line in fd]
 
 
-
 dfBioMed = {
-    "HuBMAP+HCA": pd.read_csv(PJ("..","Data","Publications","Biomedical_Papers_HuBMAP+HCA.csv")),
-    "HGP": pd.read_csv(PJ("..","Data","Publications","Biomedical_Papers_HGP.csv"))
+    "HuBMAP+HCA": pd.read_csv(PJ("..","Data","Publications","Biomedical_Papers_HuBMAP+HCA.tsv"),sep="\t"),
+    "HGP": pd.read_csv(PJ("..","Data","Publications","Biomedical_Papers_HGP.tsv"),sep="\t")
 }
 
-
-          
 #Fixing journal names
 for projectName,df in dfBioMed.items():
-    df["Journal Name"] = [journalMAGNames[journalMAGID2Index[int(ID)]] if ID else "" for ID in df["JournalId"]]
-    df["Journal Long Name"] = [journalMAGLongNames[journalMAGID2Index[int(ID)]] if ID else "" for ID in df["JournalId"]]
+    df["Journal Name"] = [journalMAGNames[journalMAGID2Index[int(ID)]] if ID else "NA" for ID in df["JournalId"]]
+    df["Journal Long Name"] = [journalMAGLongNames[journalMAGID2Index[int(ID)]] if ID else "NA" for ID in df["JournalId"]]
     df.to_csv(PJ("..","Data", "Publications","Biomedical_Papers_%s.csv"%projectName))
 
-          
 
 
 
-          
-          
+
+import re
+def canonizeName(name):
+  name = name.strip("\"").strip("\'")
+  name = name.lower().replace("."," ").replace("  "," ").replace("  "," ").strip()
+  name = re.sub('^nat ','nature ',name)
+  name = re.sub('journal ','j ',name)
+  names = name.split()
+  return " ".join([subname[0:3] if len(subname)==4 else subname  for subname in names])
+
+# Loading dictionaries for Journal matching
+with open("../Data/ScienceMapJournalDictionary_Map2ID.json","rt") as fd:
+    allToMapID = ujson.load(fd)
+
+with open("../Data/ScienceMapJournalDictionary_Map2Name.json","rt") as fd:
+    allToMapName = ujson.load(fd)
+
+with open("../Data/ScienceMapJournalDictionary_ISSN2ID.json","rt") as fd:
+    ISSNToMapID = ujson.load(fd)
+
+from collections import Counter
+noMatch = Counter()
+def venueName2MapName(origName):
+  name = canonizeName(origName)
+  if(name in allToMapName):
+    return allToMapName[name]
+  noMatch.update([origName])
+  return "NA"
+
+def venueName2MapID(origName):
+  name = canonizeName(origName)
+  if(name in allToMapID):
+    return allToMapID[name]
+  noMatch.update([origName])
+  return "NA"
+
+
+def venueISSN2MapID(origISSN):
+  name = origISSN.replace("-","").lower()
+  if(origISSN in ISSNToMapID):
+    return ISSNToMapID[origISSN]
+  return "NA"
+
+
+def getVenueData(paperID):
+    journalID = index2JournalID[magID2Index[paperID]]
+    if(journalID<0):
+        return "NA","NA"
+    journalIndex = journalMAGID2Index[journalID]
+    longName = journalMAGLongNames[journalIndex]
+    name = journalMAGNames[journalIndex]
+    issn = journalMAGISSN[journalIndex]
+    mapID = venueISSN2MapID(issn)
+    if(mapID=="NA"):
+        mapID = venueName2MapID(issn)
+    if(mapID=="NA"):
+        mapID = venueName2MapID(name)
+    if(mapID=="NA"):
+        mapID = venueName2MapID(longName)
+    return name,mapID
+
+def getYearData(paperID):
+    return index2Year[magID2Index[paperID]]
+
+minYear = 1980
+maxYear = 2020
+
+# Saving all publication data
+for projectName, edgeEntries in tqdm(projectCitationsEdges.items(), desc="Project"):
+  edgesData = {
+      "Citing ID": [],
+      "Citing Venue Name": [],
+      "Citing Venue SciMap ID": [],
+      "Citing Publication Year": [],
+      "Cited ID": [],
+      "Cited Venue Name": [],
+      "Cited Venue SciMap ID": [],
+      "Cited Publication Year": [],
+  }
+  for (citedEntryID,citingEntryID) in tqdm(edgeEntries):
+    citedEntryYear = 0
+    citedEntryVenueName,citedEntryVenueMapID = getVenueData(citedEntryID)
+    citedEntryYear = getYearData(citedEntryID)
+    if(citedEntryYear<minYear or citedEntryYear>maxYear):
+      continue
+    #Received Citations
+    citingEntryVenueName,citingEntryVenueMapID = getVenueData(citingEntryID)
+    citingYear = getYearData(citingEntryID)
+    if(citingYear<minYear or citingYear>maxYear):
+        continue
+    edgesData["Citing ID"].append(citingEntryID)
+    edgesData["Citing Venue Name"].append(citingEntryVenueName)
+    edgesData["Citing Venue SciMap ID"].append(citingEntryVenueMapID)
+    edgesData["Citing Publication Year"].append(citingYear)
+    edgesData["Cited ID"].append(citedEntryID)
+    edgesData["Cited Venue Name"].append(citedEntryVenueName)
+    edgesData["Cited Venue SciMap ID"].append(citedEntryVenueMapID)
+    edgesData["Cited Publication Year"].append(citedEntryYear)
+  dfEdges = pd.DataFrame.from_dict(edgesData)
+  dfEdges.to_csv(PJ("..","Data","ToMapOfScience","Biomedical_Edges_Citing_%s_tomap.csv.gz"%(projectName)),index=False)
+
+
+
+
+# Saving all publication data
+for projectName, edgeEntries in tqdm(projectReferencesEdges.items(), desc="Project"):
+  edgesData = {
+      "Citing ID": [],
+      "Citing Venue Name": [],
+      "Citing Venue SciMap ID": [],
+      "Citing Publication Year": [],
+      "Cited ID": [],
+      "Cited Venue Name": [],
+      "Cited Venue SciMap ID": [],
+      "Cited Publication Year": [],
+  }
+  for (citingEntryID,citedEntryID) in tqdm(edgeEntries):
+    citedEntryYear = 0
+    citedEntryVenueName,citedEntryVenueMapID = getVenueData(citedEntryID)
+    citedEntryYear = getYearData(citedEntryID)
+    if(citedEntryYear<minYear or citedEntryYear>maxYear):
+      continue
+    #Received Citations
+    citingEntryVenueName,citingEntryVenueMapID = getVenueData(citingEntryID)
+    citingYear = getYearData(citingEntryID)
+    if(citingYear<minYear or citingYear>maxYear):
+        continue
+    edgesData["Citing ID"].append(citingEntryID)
+    edgesData["Citing Venue Name"].append(citingEntryVenueName)
+    edgesData["Citing Venue SciMap ID"].append(citingEntryVenueMapID)
+    edgesData["Citing Publication Year"].append(citingYear)
+    edgesData["Cited ID"].append(citedEntryID)
+    edgesData["Cited Venue Name"].append(citedEntryVenueName)
+    edgesData["Cited Venue SciMap ID"].append(citedEntryVenueMapID)
+    edgesData["Cited Publication Year"].append(citedEntryYear)
+  dfEdges = pd.DataFrame.from_dict(edgesData)
+  dfEdges.to_csv(PJ("..","Data","ToMapOfScience","Biomedical_Edges_Referenced_%s_tomap.csv.gz"%(projectName)),index=False)
+
+
+
+
+allProjectsIDs = set()
+for projectName in ["HGP","HuBMAP+HCA"]:
+    dfCiting = pd.read_csv(PJ("..","Data","ToMapOfScience","Biomedical_Edges_Citing_%s_tomap.csv.gz"%(projectName)))
+    dfReferences = pd.read_csv(PJ("..","Data","ToMapOfScience","Biomedical_Edges_Referenced_%s_tomap.csv.gz"%(projectName)))
+    dfPapers = pd.read_csv(PJ("..","Data","ToMapOfScience","Biomedical_Papers_%s_tomap.csv"%(projectName)))
+    allProjectsIDs.update(list(dfCiting["Citing ID"]))
+    allProjectsIDs.update(list(dfCiting["Cited ID"]))
+    allProjectsIDs.update(list(dfReferences["Citing ID"]))
+    allProjectsIDs.update(list(dfReferences["Cited ID"]))
+    allProjectsIDs.update(list(dfPapers['PaperId']))
+
+
+allProjectsID2Title = {}
+for magID in allProjectsIDs:
+    title = index2Title[magID2Index[magID]]
+    allProjectsID2Title[magID] = title
+
+with open(PJ("..","Data","Biomedical_MAGID2Title.json"),"wt") as fd:
+    json.dump(allProjectsID2Title,fd)
+
 
